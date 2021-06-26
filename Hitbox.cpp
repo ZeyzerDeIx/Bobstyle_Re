@@ -55,7 +55,7 @@ Vector* Hitbox::get_vector(int wich)
 void Hitbox::show(Global_variables_container* GVC)
 {
     //on fait apparaitre les 4 bordures de la hitbox
-    for(int i=0 ; i<4 ; i++)
+    for(int i=0 ; i<5 ; i++)
     {
         m_vectors[i][CURRENT].show_debug_line(GVC);
     }
@@ -89,7 +89,7 @@ void Hitbox::spin(int angle)
     //on actualise l'angle dans le bon sens
     m_angle -= angle;
     //on surveille qu'il ne depasse pas inutilement -360°
-    if(m_angle <= 360)
+    if(m_angle <= -360)
     {
         m_angle += 360;
     }

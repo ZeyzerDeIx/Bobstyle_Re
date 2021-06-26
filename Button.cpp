@@ -7,11 +7,14 @@ Button::Button(Global_variables_container* GVC, string text)
     m_GVC = GVC;
 
     m_sprite = new Animated_sprite(GVC, "sprites/interface/button.bmp", 2);
-    m_text = new Text(GVC, text, 53 - text.size());
+    m_text = new Text(GVC, text, BUTTON_TEXT_SIZE - text.size());
 
     m_sprite->set_animation(false);
 
-    m_function = F_QUIT;
+    m_function.push_back(F_QUIT);
+    m_texts.push_back("Quitter");
+
+    m_current_slot = 0;
 
     m_is_clicked = false;
 }
@@ -58,14 +61,37 @@ void Button::click(int up_or_down)
     { //si le bouton est sous le curseur lors du click
         m_is_clicked = (up_or_down == DOWN); //vrai si le click est enffoncé
         m_sprite->skip_phase(1); //on inverse son état visuel (comme il n'y a que 2 images possibles elles s'inversent d'elles même)
+
+        if(m_is_clicked)
+        {
+            this->skip_slot();
+        }
     }
     if(up_or_down == UP){m_sprite->reset_animation();}
 }
 
-void Button::rework(int new_function, string new_text, int new_text_size)
+void Button::rework(int new_function, string new_text, int which_slot)
 {
-    m_function = new_function;
-    m_text->change_text(new_text, false, 0, 0, 0, new_text_size);
+    if(which_slot < m_function.size())
+    {
+        m_function[which_slot] = new_function;
+        m_texts[which_slot] = new_text;
+        m_text->change_text(new_text, false, 0, 0, 0, BUTTON_TEXT_SIZE - new_text.size());
+    }
+}
+
+void Button::add_function(int new_function, string new_text)
+{
+    m_function.push_back(new_function);
+    m_texts.push_back(new_text);
+}
+
+void Button::skip_slot()
+{
+    m_current_slot++;
+    if(m_current_slot == m_function.size()){m_current_slot = 0;}
+
+    m_text->change_text(m_texts[m_current_slot], false, 0, 0, 0, BUTTON_TEXT_SIZE - m_texts[m_current_slot].size());
 }
 
 bool Button::under_cursor()
@@ -83,5 +109,5 @@ bool Button::is_clicked()
 
 int Button::get_function()
 {
-    return m_function;
+    return m_function[m_current_slot];
 }

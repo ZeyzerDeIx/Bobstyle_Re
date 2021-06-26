@@ -22,6 +22,8 @@ void FPS::display()
         this->reset(); //et on reset les compteurs
     }
 
+    m_GVC->set_lag(60 - m_fps);
+
     //on actualise l'affichage
     m_text.change_text(int_to_string(m_fps) + " FPS");
 

@@ -23,16 +23,23 @@
             void set_cursor_pos(int x, int y);
             int get_cursor_pos(int x_or_y);
 
+            void set_game_parameter(int wich_parameter, bool enable);
+            bool get_game_parameter(int wich_parameter);
+
+            void set_lag(int lag);
+            int get_lag();
+
         private:
             SDL_Window* m_window;
             SDL_Surface* m_screen;
             SDL_Renderer* m_renderer;
 
             int m_frame_counter; //le nombre de frame écoulées depuis le début de la partie
-
             int m_difficulty; //la difficulté
-
+            int m_lag; //à quel point le jeu lag
             int m_cursor_pos[2]; //la position du curseur
+
+            bool m_parameters[P_PARAMETER_NUMBER]; //les paramètres du jeu
     };
 
 #endif // GLOBAL_VARIABLES_CONTAINER_H_INCLUDED

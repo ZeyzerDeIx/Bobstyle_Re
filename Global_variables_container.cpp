@@ -9,6 +9,8 @@ Global_variables_container::Global_variables_container(SDL_Window* window, SDL_S
     m_difficulty = INTERMEDIATE;
     m_cursor_pos[X] = 0;
     m_cursor_pos[Y] = 0;
+    m_parameters[P_MISSILES_ON] = false;
+    m_parameters[P_DEBRIS_ON] = true;
 }
 
 Global_variables_container::~Global_variables_container()
@@ -45,3 +47,11 @@ int Global_variables_container::get_difficulty(){return m_difficulty;}
 void Global_variables_container::set_cursor_pos(int x, int y){m_cursor_pos[X] = x;m_cursor_pos[Y] = y;}
 
 int Global_variables_container::get_cursor_pos(int x_or_y){return m_cursor_pos[x_or_y];}
+
+void Global_variables_container::set_game_parameter(int wich_parameter, bool enable){m_parameters[wich_parameter] = enable;}
+
+bool Global_variables_container::get_game_parameter(int wich_parameter){return m_parameters[wich_parameter];}
+
+void Global_variables_container::set_lag(int lag){m_lag = lag;}
+
+int Global_variables_container::get_lag(){return m_lag;}

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Bobstyle::Bobstyle(Global_variables_container* GVC): Entity(GVC, "sprites/bobstyle/Bob_Style.bmp"), m_cursor(m_pos[X],m_pos[Y],1,1)
+Bobstyle::Bobstyle(Global_variables_container* GVC, string default_sprite, int default_anim_nb): Entity(GVC, default_sprite, default_anim_nb), m_cursor(m_pos[X],m_pos[Y],1,1)
 {
     m_speed_lines = new Animated_sprite(m_GVC, "sprites/bobstyle/speed_lines.bmp", 32);
     m_bobstyle_thruster = new Animated_sprite(m_GVC, "sprites/bobstyle/bob_style_thruster.bmp", BOBSTYLE_TRUSTER_PHASES);
@@ -23,6 +23,10 @@ Bobstyle::Bobstyle(Global_variables_container* GVC): Entity(GVC, "sprites/bobsty
     m_dash_timer = SDL_GetTicks();
     m_cooldown = 400;
     m_speed = 150;
+
+    m_damages = 20;
+
+    m_last_hit = -INVINCIBILITY_FRAME;
 }
 Bobstyle::~Bobstyle()
 {
@@ -78,20 +82,23 @@ void Bobstyle::manage()
 
 void Bobstyle::display()
 {
-    if(!m_parameters[DEBUG_MODE] and !m_is_dashing)
-    {
-        m_tp_line->display();
-    }
+    if(m_GVC->get_frame()-m_last_hit > INVINCIBILITY_FRAME/(m_GVC->get_difficulty()+1) or (m_GVC->get_frame()-m_last_hit)%8 >= 4)
+    { //permet de faire clignoter les sprites si bobstyle est invincible
+        if(!m_parameters[DEBUG_MODE] and !m_is_dashing)
+        {
+            m_tp_line->display();
+        }
 
-    if(!m_is_dashing)
-    {
-        Entity::display();
+        if(!m_is_dashing)
+        {
+            Entity::display();
 
-        m_speed_lines->display();
-    }
-    else
-    {
-        m_bobstyle_thruster->display();
+            m_speed_lines->display();
+        }
+        else
+        {
+            m_bobstyle_thruster->display();
+        }
     }
 
     if(m_parameters[DEBUG_MODE])
@@ -111,7 +118,6 @@ void Bobstyle::update_tp_line()
         m_tp_vector[CURRENT] = m_tp_vector[PREVIOUS];
         m_tp_vector[CURRENT].spin(m_cursor.get_angle());
         m_tp_vector[CURRENT].shift(m_pos[X] - m_tp_vector[CURRENT].get_a(X), m_pos[Y] - m_tp_vector[CURRENT].get_a(Y));
-
 
         m_tp_line->reset_angle();
         m_tp_line->spin(-m_cursor.get_angle());
@@ -176,11 +182,12 @@ void Bobstyle::stay_in_screen(Uint32 borders)
 
 void Bobstyle::lose_hp(int lost_hp)
 {
-    m_hp -= lost_hp;
-    if(m_hp <= 0)
-    {
-        m_parameters[ALIVE] = false;
-    }
+    if(m_GVC->get_frame()-m_last_hit > INVINCIBILITY_FRAME/(m_GVC->get_difficulty()+1)) //si l'invincibilité est terminée
+    //bobstyle prend des dégats et on relance l'invincibilité
+    {m_hp -= lost_hp;m_last_hit = m_GVC->get_frame();}
+
+
+    if(m_hp <= 0){m_parameters[ALIVE] = false;} //si il a 0pv ou moins il meur
 }
 
 void Bobstyle::reset_movements()

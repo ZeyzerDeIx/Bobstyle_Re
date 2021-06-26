@@ -18,7 +18,7 @@ Text::Text(Global_variables_container* GVC, string text, int font_size, string f
     // récuperrer l'erreur
     }
 
-    m_original_image = TTF_RenderText_Solid(m_font, text.c_str(), {100,100,100});
+    m_original_image = TTF_RenderText_Solid(m_font, text.c_str(), {175,175,175});
     m_image = SDL_CreateTextureFromSurface(m_GVC->renderer(), m_original_image);
 }
 

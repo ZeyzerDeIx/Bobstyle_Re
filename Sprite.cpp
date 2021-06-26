@@ -94,7 +94,10 @@ int Sprite::get_border(int wich_side)
 {
     //Retourne la valeure (X ou Y) correspondante à la bordure demandée.
     int w,h;
-    SDL_QueryTexture(m_image, nullptr, nullptr, &w, &h);
+    SDL_QueryTexture(m_image, NULL, NULL, &w, &h);
+
+    //si le sprite est tourné vers la droite ou la gauche à 90° en inverse h et w
+    if(m_angle%90 == 0 and m_angle%180 != 0 and m_angle != 0){int x(w);w=h;h=x;}
     switch(wich_side)
     {
         case TOP:
@@ -160,7 +163,7 @@ void Sprite::display()
     showing_rect.h = m_original_image->h;
 
     //affiche l'image sur l'écran avec une rotation de m_angle degrés
-    SDL_RenderCopyEx(m_GVC->renderer(), m_image, nullptr, &showing_rect, m_angle, nullptr, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(m_GVC->renderer(), m_image, NULL, &showing_rect, m_angle, NULL, SDL_FLIP_NONE);
 }
 
 void Sprite::spin(int angle)
@@ -281,9 +284,13 @@ bool Animated_sprite::presence_of_bugs()
 
 Sprite* Animated_sprite::operator[](int key)
 {
-    if(key < 0)
+    if(key == TAB_END)
     {
         return m_phases[m_phases.size()-1];
+    }
+    else if(key < 0)
+    {
+        return m_phases[0];
     }
     else
     {

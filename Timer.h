@@ -8,16 +8,16 @@
     {
         public:
 
-            Timer();
+            Timer(); //constructeur
 
-            int get_elapsed_time();
-            int get_and_restart();
+            int get_elapsed_time(); //renvoit le temps écoulé depuis la derniere réinitialisation
+            int get_and_restart(); //renvoit le temps écoulé depuis la derniere réinitialisation puis réinitialise le chronomètre
 
-            void restart();
+            void restart(); //réinitialise le chronomètre
 
         private:
 
-            int m_last_time_save;
+            int m_last_time_save; //permet de sauvegarder un temps
 
     };
 

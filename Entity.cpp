@@ -8,9 +8,9 @@ Entity::Entity(Global_variables_container* GVC, string image_location ,int anim_
     m_sprite = new Animated_sprite(m_GVC, image_location, anim_numb_phase); //on charge le sprite
 
     m_hitbox = Hitbox(m_sprite->get_pos(X),
-                       m_sprite->get_pos(Y),
-                       m_sprite->get_border(RIGHT)-m_sprite->get_border(LEFT),
-                       m_sprite->get_border(BOTTOM)-m_sprite->get_border(TOP));
+                      m_sprite->get_pos(Y),
+                      m_sprite->get_border(RIGHT)-m_sprite->get_border(LEFT),
+                      m_sprite->get_border(BOTTOM)-m_sprite->get_border(TOP));
 
     //on cale la position sur les cooredonnés du centre du sprite
     m_pos[X] = m_sprite->get_pos(X);
@@ -35,12 +35,15 @@ Entity::Entity(Global_variables_container* GVC, string image_location ,int anim_
     m_parameters[COLLISIONNABLE] = false;
     m_parameters[ANIMATED] = true;
     m_parameters[BOOMERANG] = false;
+    m_parameters[IS_ON_BORDER] = false;
 
     //on fixe les dommages pas defaut à 0
     m_damages = 0;
 
     //on defini le type de l'entité
     m_type = ENTITY;
+
+    m_hp = 1;
 }
 
 Entity::~Entity()
@@ -78,9 +81,9 @@ int Entity::get_pos(int x_or_y)
     return m_pos[x_or_y];
 }
 
-int Entity::get_border(int wich_side)
+int Entity::get_border(int which_side)
 {
-    return m_sprite->get_border(wich_side);
+    return m_sprite->get_border(which_side);
 }
 
 int Entity::get_angle()
@@ -96,6 +99,11 @@ int Entity::get_damage()
 int Entity::get_speed()
 {
     return m_speed;
+}
+
+int Entity::get_size(int h_or_w)
+{
+    return m_sprite->get_size(h_or_w);
 }
 
 Uint32 Entity::out_of_screen()
@@ -117,6 +125,10 @@ Uint32 Entity::out_of_screen()
     {
         borders = borders | FLAG_RIGHT;
     }
+
+    if(borders != FLAG_NONE){m_parameters[IS_ON_BORDER] = true;}
+    else{m_parameters[IS_ON_BORDER] = false;}
+
     return borders;
 }
 
@@ -127,30 +139,41 @@ Uint32 Entity::get_type()
 
 bool Entity::collision(Entity *other)
 {
+    //si la collision est activée sur les deux entités
     if(!m_parameters[COLLISIONNABLE] or !other->get_parameter(COLLISIONNABLE))
     {
         return false;
     }
-    else if(this->get_border(TOP) > other->get_border(BOTTOM) or
-       this->get_border(BOTTOM) < other->get_border(TOP) or
-       this->get_border(LEFT) > other->get_border(RIGHT) or
-       this->get_border(RIGHT) < other->get_border(LEFT))
-    {
+
+    //si les deux entités sont trop loins pour que la moindre collision soit possible
+    if(Vector(m_pos[X], m_pos[Y], other->get_pos(X), other->get_pos(Y)).get_norm() > max(this->get_size(W), this->get_size(H)) +
+                                                                                     max(other->get_size(W), other->get_size(H)))
+    { //cela permet d'économiser nettement le processeur
         return false;
     }
-    else if((m_angle % 90) == 0 and (other->get_angle() % 90) == 0)
+    //sinon, si les deux entités ont une rotation simple (multiple de 90) ou aucune rotation
+    else if(m_angle%90 == 0 and other->get_angle()%90 == 0)
     {
-        return true;
+        //detection de collision simple basé sur les bordures des deux entités
+        if(this->get_border(TOP) > other->get_border(BOTTOM) or
+           this->get_border(BOTTOM) < other->get_border(TOP) or
+           this->get_border(LEFT) > other->get_border(RIGHT) or
+           this->get_border(RIGHT) < other->get_border(LEFT))
+        {
+            return false;
+        }
+        else{return true;}
     }
+    //sinon on teste avec les hitbox précises
     else
     {
         return m_hitbox.collision(other->get_hitbox());
     }
 }
 
-bool Entity::get_parameter(int wich_paremeter)
+bool Entity::get_parameter(int which_paremeter)
 {
-    return m_parameters[wich_paremeter];
+    return m_parameters[which_paremeter];
 }
 
 Hitbox* Entity::get_hitbox()
@@ -167,15 +190,15 @@ void Entity::set_pos(int x, int y)
     m_sprite->set_pos(x,y);
 }
 
-void Entity::set_parameter(int wich_parameter, bool enable)
+void Entity::set_parameter(int which_parameter, bool enable)
 {
-    m_parameters[wich_parameter] = enable;
+    m_parameters[which_parameter] = enable;
 
     if(!m_parameters[ANIMATED])
     {
         m_sprite->set_animation(false);
     }
-    if(wich_parameter == BOOMERANG)
+    if(which_parameter == BOOMERANG)
     {
         m_sprite->enable_boomrang_mode();
     }
@@ -220,9 +243,11 @@ void Entity::manage()
         this->stay_in_screen(this->out_of_screen());
     }
 
-    m_timer.restart();
+    if(m_pos[Y] > m_GVC->screen()->h+500 or m_pos[Y] < -500){m_parameters[ALIVE] = false;}
 
-    if(m_pos[Y] > m_GVC->screen()->h+500 or m_pos[Y] < 0){m_parameters[ALIVE] = false;}
+    m_hitbox.update(m_pos[X], m_pos[Y]);
+
+    m_timer.restart();
 }
 
 void Entity::display()
@@ -232,15 +257,8 @@ void Entity::display()
     //Si le mode debug est activé on affiche la ligne de debug
     if(m_parameters[DEBUG_MODE])
     {
-        if(m_type == DEBRIS) //à modifier
-        {
-            m_hitbox.update(m_pos[X], m_pos[Y]);
-            m_hitbox.show(m_GVC);
-        }
-        else
-        {
-            this->show_debug_line();
-        }
+        m_hitbox.update(m_pos[X], m_pos[Y]);
+        m_hitbox.show(m_GVC);
     }
 }
 
@@ -316,3 +334,7 @@ void Entity::stay_in_screen(Uint32 borders)
     m_sprite->set_pos(m_pos[X], m_pos[Y]);
 }
 
+void Entity::lose_hp(int lost_hp)
+{
+    m_parameters[ALIVE] = false;
+}

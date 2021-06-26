@@ -12,6 +12,7 @@
             Score(Global_variables_container* GVC);
 
             void display();
+            void disable();
 
             int get_score();
 
@@ -20,6 +21,8 @@
             Global_variables_container* m_GVC;
 
             Text m_text;
+
+            bool m_enable;
 
             int m_score;
             int m_frame_save;

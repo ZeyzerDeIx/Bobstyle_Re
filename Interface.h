@@ -16,6 +16,9 @@
 
             void display(); //affiche l'interface
             void pause(); //arrête le jeu et affiche le menu de pause
+            void set_parameter(int which_parameter, bool enable);
+
+            bool get_parameter(int which_parameter);
 
             int get_score(); //retourne le score
 
@@ -26,6 +29,8 @@
             Bobstyle* m_bobstyle; //un pointeur vers bobstyle pour avoir ses infos
 
             bool* m_done; //un pointeur pour terminer le jeu si besoin
+
+            bool m_parameters[1];
 
             SDL_Rect m_info_bar_size; //contient la taille du bandeau gris qui permet d'afficher l'interface par dessus
 

@@ -8,7 +8,7 @@
     {
         public:
 
-            Bobstyle(Global_variables_container* GVC);
+            Bobstyle(Global_variables_container* GVC, std::string default_sprite = "sprites/bobstyle/Bob_Style.bmp", int default_anim_nb = 1);
             ~Bobstyle();
 
             int get_hp(); // retourne les pv de bobsytle
@@ -33,9 +33,9 @@
             bool m_is_dashing; //vrai pendant un dash
 
             int m_frame_counter; //sert à connaitre à quelle frame en est le dash
-            int m_hp; //les pv
             int m_dash_timer; //sert de chronomètre pour le cooldown du dash
             int m_cooldown; //temps minimal avant de pouvoir réutiliser le dash (en miliseconds)
+            int m_last_hit; //contient la derniere frame à laquelle bobstyle a étré touché (pour gerer l'invincibilité)
     };
 
 #endif // BOBSTYLE_H_INCLUDED

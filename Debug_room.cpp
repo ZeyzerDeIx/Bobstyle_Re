@@ -1,21 +1,31 @@
-#include "Game.h"
+#include "Debug_room.h"
 
 using namespace std;
 
-int game(Global_variables_container* GVC)
+int debug_room(Global_variables_container* GVC)
 {
     bool done = false; //sert a maintenir la boucle principale
 
     Timer timer; //sert à mesurer le temps
 
-    Bobstyle bobstyle(GVC); //création de bobstyle (le personnage jouable)
+    Timer cooldown; //pour tirer
+
+    Bobstyle bobstyle(GVC, "sprites/DEBUG/AnimatedDebugRect.bmp", 9); //création de bobstyle (le personnage jouable)
+    bobstyle.set_parameter(BOOMERANG, true);
+    bobstyle.set_parameter(DEBUG_MODE, true);
 
     Interface interface_guy(GVC, &bobstyle, &done); //c'est l'interface
+    interface_guy.set_parameter(DEBUG_MODE, true);
 
     Generator generate_guy(GVC, &bobstyle); //c'est le générateur
-    generate_guy.set_auto_generation(true); //on le met en mode automatique (il génère selon la difficulté)
+    generate_guy.set_clouds(false); //on désactiveles nuages
+    generate_guy.set_debug_mode(true); //on active le debug mode
+    //generate_guy.set_auto_generation(true); //on le met en mode automatique (il génère selon la difficulté)
 
     Handler handle_guy(GVC, &bobstyle, &interface_guy, &generate_guy, &done); //sert à gerer les entrés du joueur
+
+    Kube test_boss(GVC, &bobstyle, &generate_guy);
+    test_boss.set_parameter(DEBUG_MODE, true);
 
     //boucle principale
     while (!done)
@@ -27,10 +37,6 @@ int game(Global_variables_container* GVC)
             GVC->update_frame(); //permet de tenir le compte des frame depuis le début de la partie
 
             generate_guy.manage_collisions(&bobstyle);
-            if(!bobstyle.get_parameter(ALIVE))
-            {
-                done = true;
-            }
 
             //gestion de l'affichage et autres
             //{
@@ -42,8 +48,17 @@ int game(Global_variables_container* GVC)
                 //{
                     generate_guy.manage_and_display();
 
+                    test_boss.manage_and_display();
+
                     bobstyle.manage_and_display();
                 //}
+
+                /*if(cooldown.get_elapsed_time() >= 1000)
+                {
+                    test_weapon.fire();
+                    //generate_guy.generate_entities(PROJECTILE,640,512,&bobstyle);
+                    cooldown.restart();
+                }*/
 
                 interface_guy.display();
 
@@ -63,7 +78,7 @@ int game(Global_variables_container* GVC)
 
     GVC->reset_frame(); //on reset le compteur de frame
 
-    save(enter_text(GVC), interface_guy.get_score()); //en travaux
+    //save(enter_text(GVC), interface_guy.get_score()); //en travaux
 
     return 0;
 }

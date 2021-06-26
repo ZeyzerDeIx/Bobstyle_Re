@@ -1,7 +1,7 @@
 #ifndef CLOUD_H_INCLUDED
 #define CLOUD_H_INCLUDED
 
-#include "constants.h"
+    #include "constants.h"
     #include "Entity.h"
 
     class Cloud: public Entity
